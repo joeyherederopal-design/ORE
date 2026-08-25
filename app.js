@@ -643,8 +643,8 @@ function importDesktopData() {
       UNI: { qty: 6.31900000, cost: 1719 }
     },
     stocks: {
-      HOOD: { qty: 0.275404617, cost: 26.06 },
-      MSFT: { qty: 0.129317957, cost: 49.33 }
+      GOOGL: { qty: 0.031620784, cost: 11.00 },
+      META: { qty: 0.145833567, cost: 81.89 }
     },
     funds: {
       'MANULIFE IM': { qty: 1009.37, cost: 1009.37 },
