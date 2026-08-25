@@ -80,16 +80,25 @@ async function fetchCryptoHistory(symbol) {
 }
 
 async function fetchStock(symbol) {
-  try {
-    const proxy = 'https://corsproxy.io/?url=';
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=3mo`;
-    const r = await fetch(proxy + encodeURIComponent(url));
-    const d = await r.json();
-    const result = d.chart.result[0];
-    const closes = result.indicators.quote[0].close.filter(c => c !== null && c !== undefined);
-    if (closes.length === 0) return null;
-    return { price: closes[closes.length - 1], closes };
-  } catch(e) { return null; }
+  const proxies = [
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+  ];
+  const target = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=3mo`;
+  for (const makeUrl of proxies) {
+    try {
+      const r = await fetch(makeUrl(target));
+      if (!r.ok) continue;
+      const d = await r.json();
+      const result = d.chart && d.chart.result && d.chart.result[0];
+      if (!result) continue;
+      const closes = result.indicators.quote[0].close.filter(c => c !== null && c !== undefined);
+      if (closes.length === 0) continue;
+      return { price: closes[closes.length - 1], closes };
+    } catch(e) { continue; }
+  }
+  return null;
 }
 
 // ================================================================
