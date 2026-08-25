@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>ᚠ ORE — Oracle of Real Earnings</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body {
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background:#1a1a2e; color:#fff; min-height:100vh;
+      padding-bottom:70px; overflow-x:hidden;
+    }
+    /* Header */
+    .header {
+      background:#16213e; padding:14px 16px; position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      box-shadow:0 2px 10px rgba(0,0,0,0.3);
+    }
+    .header-logo { font-size:22px; font-weight:bold; color:#f0c040; }
+    .header-sub { font-size:10px; color:#a0a0b0; font-style:italic; margin-left:6px; }
+    .header-time { font-size:11px; color:#a0a0b0; }
+    /* Content */
+    #content { padding:12px; min-height:calc(100vh - 130px); }
+    /* Cards */
+    .card {
+      background:#16213e; border-radius:12px; padding:14px; margin-bottom:10px;
+    }
+    .card-row { display:flex; justify-content:space-between; align-items:center; }
+    .card-title { font-size:17px; font-weight:bold; }
+    .card-price { font-size:15px; color:#0abde3; }
+    .card-sub { font-size:12px; color:#a0a0b0; margin-top:4px; }
+    .card-pnl { font-size:13px; font-weight:bold; margin-top:4px; }
+    .badge {
+      padding:4px 12px; border-radius:20px; font-size:12px; font-weight:bold; color:#000;
+    }
+    .badge-buy { background:#00d09c; }
+    .badge-sell { background:#ff4757; }
+    .badge-hold { background:#ffd93d; }
+    .profit { color:#00d09c; }
+    .loss { color:#ff4757; }
+    /* Signals */
+    .signal-line { font-size:11px; color:#a0a0b0; margin-top:3px; }
+    .calc-box {
+      font-family:monospace; font-size:11px; background:#0d1117; border-radius:8px;
+      padding:8px; margin-top:8px; white-space:pre-line;
+    }
+    /* Net worth */
+    .networth-card {
+      background:#0f3460; border-radius:16px; padding:20px; text-align:center; margin-bottom:12px;
+    }
+    .networth-label { font-size:12px; color:#a0a0b0; text-transform:uppercase; letter-spacing:1px; }
+    .networth-value { font-size:32px; font-weight:bold; color:#fff; margin:6px 0; }
+    .networth-pnl { font-size:15px; font-weight:bold; }
+    /* Section headers */
+    .section-header {
+      font-size:14px; font-weight:bold; padding:8px 4px; margin-top:8px;
+    }
+    /* Buttons */
+    .btn {
+      border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:bold;
+      cursor:pointer; width:100%; color:#fff; transition:opacity .2s;
+    }
+    .btn:active { opacity:0.7; }
+    .btn-gold { background:#f0c040; color:#000; }
+    .btn-blue { background:#0abde3; }
+    .btn-green { background:#00d09c; color:#000; }
+    .btn-gray { background:#2d2d44; }
+    .btn-row { display:flex; gap:8px; margin-bottom:10px; }
+    .btn-row .btn { flex:1; }
+    /* Bottom nav */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; right:0; background:#16213e;
+      display:flex; padding:8px 0; z-index:100; box-shadow:0 -2px 10px rgba(0,0,0,0.3);
+    }
+    .nav-item {
+      flex:1; text-align:center; padding:6px; cursor:pointer; color:#a0a0b0;
+      font-size:11px; transition:color .2s;
+    }
+    .nav-item.active { color:#f0c040; }
+    .nav-icon { font-size:20px; display:block; margin-bottom:2px; }
+    /* Progress bar */
+    .progress-bar { background:#1a1a2e; border-radius:6px; height:10px; margin:6px 0; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:6px; transition:width .5s; }
+    /* Footer */
+    .footer { text-align:center; font-size:11px; color:#6a6a8a; font-style:italic; padding:12px; }
+    /* Modal */
+    .modal-overlay {
+      position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7);
+      z-index:200; display:none; justify-content:center; align-items:center;
+    }
+    .modal-overlay.show { display:flex; }
+    .modal {
+      background:#16213e; border-radius:16px; padding:20px; width:90%; max-width:400px;
+      max-height:85vh; overflow-y:auto;
+    }
+    .modal-title { font-size:18px; font-weight:bold; color:#f0c040; margin-bottom:12px; text-align:center; }
+    .modal label { font-size:13px; color:#a0a0b0; display:block; margin:10px 0 4px; }
+    .modal input, .modal select {
+      width:100%; padding:10px; border-radius:8px; border:1px solid #2d2d44;
+      background:#0d1117; color:#fff; font-size:15px; margin-bottom:6px;
+    }
+    .radio-row { display:flex; gap:12px; margin:6px 0; }
+    .radio-row label { display:flex; align-items:center; gap:4px; cursor:pointer; font-size:14px; }
+    /* Loading */
+    .loading { text-align:center; padding:40px; color:#a0a0b0; font-size:14px; }
+    .spinner {
+      border:3px solid #2d2d44; border-top:3px solid #f0c040; border-radius:50%;
+      width:30px; height:30px; animation:spin 1s linear infinite; margin:0 auto 12px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    /* Medal */
+    .medal { font-size:18px; margin-right:6px; }
+    .scan-item { padding:10px 4px; border-bottom:1px solid #2d2d44; }
+    .scan-item:last-child { border-bottom:none; }
+    .reason { font-size:11px; color:#00d09c; margin-top:2px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <span class="header-logo">ᚠ ORE</span>
+      <span class="header-sub">Oracle of Real Earnings</span>
+    </div>
+    <span class="header-time" id="headerTime"></span>
+  </div>
+
+  <div id="content">
+    <div class="loading"><div class="spinner"></div>Loading ORE...</div>
+  </div>
+
+  <div class="footer">you're always with us</div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')">
+      <span class="nav-icon">💎</span>Overview
+    </div>
+    <div class="nav-item" data-tab="crypto" onclick="switchTab('crypto')">
+      <span class="nav-icon">🪙</span>Crypto
+    </div>
+    <div class="nav-item" data-tab="stocks" onclick="switchTab('stocks')">
+      <span class="nav-icon">📈</span>Stocks
+    </div>
+    <div class="nav-item" data-tab="funds" onclick="switchTab('funds')">
+      <span class="nav-icon">🏦</span>Funds
+    </div>
+  </div>
+
+  <!-- Trade Modal -->
+  <div class="modal-overlay" id="tradeModal">
+    <div class="modal">
+      <div class="modal-title">💸 Record Trade</div>
+      <label>Platform</label>
+      <div class="radio-row">
+        <label><input type="radio" name="tPlatform" value="crypto" checked> 🪙 Crypto</label>
+        <label><input type="radio" name="tPlatform" value="stocks"> 📈 Stocks</label>
+        <label><input type="radio" name="tPlatform" value="funds"> 🏦 Funds</label>
+      </div>
+      <label>Action</label>
+      <div class="radio-row">
+        <label><input type="radio" name="tAction" value="BUY" checked> 🟢 BUY</label>
+        <label><input type="radio" name="tAction" value="SELL"> 🔴 SELL</label>
+      </div>
+      <label>Asset name (BTC, AAPL, MANULIFE IM)</label>
+      <input type="text" id="tName" placeholder="e.g. BTC">
+      <label id="tAmountLabel">PHP spent</label>
+      <input type="number" id="tAmount" placeholder="0.00">
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn btn-gray" onclick="closeModal('tradeModal')">Cancel</button>
+        <button class="btn btn-blue" onclick="saveTrade()">✅ Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3086d1e2ad8acf8',t:'MTc4NzYzODE0OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
+</body>
+</html>
