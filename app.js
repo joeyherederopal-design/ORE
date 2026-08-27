@@ -47,8 +47,9 @@ async function fetchPhpRate() {
   return phpRate;
 }
 
-// Fetch ALL crypto data in ONE call (prices + sparkline history)
+// Fetch ALL crypto data — CoinGecko for history, Coins.ph for exact prices
 async function fetchAllCryptoPrices(symbols) {
+  // Step 1: Get history from CoinGecko (for RSI, trends, analysis)
   const ids = symbols.map(s => COIN_IDS[s]).filter(Boolean).join(',');
   try {
     const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=php&ids=${ids}&sparkline=true`;
@@ -57,14 +58,31 @@ async function fetchAllCryptoPrices(symbols) {
     data.forEach(coin => {
       for (const [sym, id] of Object.entries(COIN_IDS)) {
         if (id === coin.id) {
-          priceCache[sym] = coin.current_price;
           if (coin.sparkline_in_7d && coin.sparkline_in_7d.price && coin.sparkline_in_7d.price.length > 0) {
             historyCache[sym] = coin.sparkline_in_7d.price;
           }
+          if (!priceCache[sym]) priceCache[sym] = coin.current_price;
         }
       }
     });
-  } catch(e) { /* keep cached */ }
+  } catch(e) { }
+  // Step 2: Override with exact prices from Coins.ph (matches your app!)
+  const proxies = [
+    u => u,
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+  ];
+  await Promise.all(symbols.map(async (sym) => {
+    const target = `https://api.pro.coins.ph/openapi/v1/ticker/price?symbol=${sym}PHP`;
+    for (const makeUrl of proxies) {
+      try {
+        const r = await fetch(makeUrl(target));
+        if (!r.ok) continue;
+        const d = await r.json();
+        const price = parseFloat(d.price);
+        if (price && price > 0) { priceCache[sym] = price; break; }
+      } catch(e) { continue; }
+    }
+  }));
 }
 
 async function fetchCryptoPrice(symbol) {
